@@ -11,8 +11,8 @@ DOCKER=heron_docker
 DOCKERFILE=Dockerfile
 NAME=heron
 BUILD=false
-WORKSPACE=/Users/$USER/code/heron_ws/
-DATA=/Users/$USER/data/
+WORKSPACE=/home/$USER/workspaces/heron_ws/
+DATA=/home/$USER/data/
 
 help()
 {
@@ -23,7 +23,7 @@ help()
     exit 2
 }
 
-SHORT=bn:w:d:h
+SHORT=b,n:,w:,d:,h
 LONG=build,name:,workspace:,data:,help
 OPTS=$(getopt -a -n run_docker --options $SHORT --longoptions $LONG -- "$@")
 echo $OPTS
@@ -66,32 +66,32 @@ done
 
 if [ "$BUILD" = true ]; then
     echo "Building docker: $DOCKERFILE as $DOCKER"
-    docker build -f $DOCKERFILE --platform linux/arm64/v8 -t $DOCKER .
+    docker build -f $DOCKERFILE -t $DOCKER .
 fi
 
-#XAUTH=/tmp/.docker.xauth
-#rm $XAUTH
+XAUTH=/tmp/.docker.xauth
+rm $XAUTH
 
-#echo "Preparing Xauthority data..."
-#xauth_list=$(xauth nlist :0 | tail -n 1 | sed -e 's/^..../ffff/')
-#if [ ! -f $XAUTH ]; then
-#    if [ -n "$xauth_list" ]; then
-#        echo $xauth_list | xauth -f $XAUTH nmerge -
-#    else
-#        touch $XAUTH
-#    fi
-#    chmod a+r $XAUTH
-#fi
+echo "Preparing Xauthority data..."
+xauth_list=$(xauth nlist :0 | tail -n 1 | sed -e 's/^..../ffff/')
+if [ ! -f $XAUTH ]; then
+    if [ -n "$xauth_list" ]; then
+        echo $xauth_list | xauth -f $XAUTH nmerge -
+    else
+        touch $XAUTH
+    fi
+    chmod a+r $XAUTH
+fi
 
-#echo "Done."
-#echo ""
-#echo "Verifying file contents:"
-#file $XAUTH
-#echo "--> It should say \"X11 Xauthority data\"."
+echo "Done."
+echo ""
+echo "Verifying file contents:"
+file $XAUTH
+echo "--> It should say \"X11 Xauthority data\"."
 ##echo ""
-#echo "Permissions:"
-#ls -FAlh $XAUTH
-#echo ""
+echo "Permissions:"
+ls -FAlh $XAUTH
+echo ""
 echo "Running docker..."
 
 docker run -it --rm \
