@@ -53,3 +53,15 @@ cd ~/data/path/to/the/dataset/
 rosbag play 2024-12-11-11-09-56.bag
 ```
 
+## Running the crack finding node
+This node will just sit there and wait for someone to call a service request
+```
+rosrun heron_vision crack_finder_node.py
+```
+
+## Running the testing node
+This will subscribe to the topics in the ROS Bag and collect them to call the crack service.
+```
+rosrun heron_vision service_tester_node.py
+```
+
