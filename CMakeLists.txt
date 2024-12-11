@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   heron_msgs
+  cv_bridge
 )
 
 catkin_python_setup()

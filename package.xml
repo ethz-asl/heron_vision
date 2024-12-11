@@ -15,6 +15,7 @@
 
   <depend>std_msgs</depend>
   <depend>heron_msgs</depend>
+  <depend>cv_bridge</depend>
 
   <export>
   </export>

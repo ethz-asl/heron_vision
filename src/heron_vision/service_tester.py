@@ -35,6 +35,7 @@ class ServiceTester:
     def depth_image_callback(self, image_msg):
         rospy.loginfo("Got an Depth image.")
         self._depth_image_msg = image_msg
+        rospy.loginfo(image_msg.encoding)
         self.send_service_request()
 
     def camera_info_callback(self, camera_info_msg):
