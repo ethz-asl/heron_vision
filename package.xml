@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>heron_vision</name>
+  <version>0.0.0</version>
+  <description>Heron Vision package</description>
+
+  <maintainer email="email@email.com"></maintainer>
+  <author email="email@email.com"></author>
+
+  <license>BSD 3-Clause</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+
+  <depend>std_msgs</depend>
+  <depend>heron_msgs</depend>
+
+  <export>
+  </export>
+</package>
