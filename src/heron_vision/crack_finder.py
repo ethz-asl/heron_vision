@@ -14,9 +14,9 @@ class CrackFinder:
 
         # Create a service server for the find_cracks service.
         self._crack_service = rospy.Service(
-            "find_cracks", FindCrack, self.find_crack_callback)
+            "~find_cracks", FindCrack, self.find_crack_callback)
         self._get_bool_service = rospy.Service(
-            "get_bool", GetBool, self.get_bool_callback)
+            "~get_bool", GetBool, self.get_bool_callback)
 
     # Define a callback for the cracks server.
 
@@ -25,6 +25,7 @@ class CrackFinder:
         cv_image = self._cv_bridge.imgmsg_to_cv2(
             req.image_rgb, desired_encoding='passthrough')
         print(cv_image.shape)
+        rospy.sleep(5.0)
         # TODO: Fill in the rest here!!!!
         return FindCrackResponse()
 
