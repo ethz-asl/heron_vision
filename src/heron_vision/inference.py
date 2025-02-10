@@ -24,8 +24,8 @@ def load_model(model_path, num_classes=1):
 # Load models once (avoid reloading on every function call)
 MODELS = {
     "pothole": load_model(os.path.join(os.path.dirname(__file__), "../../models/potholes_efficientnet_b0.pth")),
-    "crack": load_model(os.path.join(os.path.dirname(__file__), "../../models/cracks_efficientnetb0.pth")),
-    #"laneEdge": load_model(os.path.join(os.path.dirname(__file__), "../../models/lanes_efficientnetb0.pth")),
+    "crack": load_model(os.path.join(os.path.dirname(__file__), "../../models/cracks_efficientnet_b0.pth")),
+    "lane_edge": load_model(os.path.join(os.path.dirname(__file__), "../../models/lanes_efficientnet_b0.pth")),
 }
 
 # Preprocessing function
@@ -45,7 +45,7 @@ def segment_defect(cv_image, defect_type, **kwargs):
 
     Args:
         cv_image (np.ndarray): Input image (BGR format).
-        defect_type (str): "pothole", "crack", or "laneEdge"
+        defect_type (str): "pothole", "crack", or "lane_edge"
         **kwargs: Additional parameters (e.g., is_right_side for laneEdge)
 
     Returns:
