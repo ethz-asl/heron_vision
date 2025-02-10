@@ -1,2 +1,4 @@
 from heron_vision.crack_finder import CrackFinder
+from heron_vision.pothole_finder import PotholeFinder
+from heron_vision.lane_edge_finder import LaneEdgeFinder
 from heron_vision.service_tester import ServiceTester
