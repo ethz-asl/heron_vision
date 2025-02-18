@@ -50,13 +50,13 @@ roscore &
 To run the dataset, download the dataset from the #vision channel on slack.
 ```
 cd ~/data/path/to/the/dataset/
-rosbag play 2024-12-11-11-09-56.bag
+rosbag play 2025-02-18-15-25-24.bag
 ```
 
-## Running the crack finding node
+## Running the pothole finding node
 This node will just sit there and wait for someone to call a service request
 ```
-rosrun heron_vision crack_finder_node.py
+rosrun heron_vision pothole_finder_node.py
 ```
 
 ## Running the testing node
