@@ -55,9 +55,19 @@ class ServiceTester:
         if self._rgb_image_msg and self._depth_image_msg and self._camera_info_msg:
             rospy.loginfo("All data available. Calling service calls.")
             # Send each service request
-            self._send_crack_service_request()
-            self._send_pothole_service_request()
-            self._send_lane_edge_service_request()
+            try:
+                self._send_crack_service_request()
+            except:
+                rospy.logwarn("No crack service found")
+            try:
+                self._send_pothole_service_request()
+            except:
+                rospy.logwarn("No pothole service found")
+            try:
+                self._send_lane_edge_service_request()
+            except:
+                rospy.logwarn("No lane service found")
+
 
     def _send_crack_service_request(self):
         rospy.loginfo("Calling crack service.")

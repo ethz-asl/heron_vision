@@ -12,6 +12,11 @@ RUN apt-get -qq update && apt-get install -y python3-catkin-tools python3-vcstoo
 # Install other system deps
 RUN apt-get -qq update && apt-get install -y qtbase5-dev bash-completion
 
+# pip install some stuff
+RUN pip install torch
+
+RUN pip install torchvision segmentation_models_pytorch scipy
+
 # Set up bash
 # Add sourcing of the repo to the ~/.bashrc
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc

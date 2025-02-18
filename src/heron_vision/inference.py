@@ -63,6 +63,6 @@ def segment_defect(cv_image, defect_type, **kwargs):
         output = torch.sigmoid(output).squeeze(0).squeeze(0).cpu().numpy()
 
     # Convert output to binary mask
-    binary_mask = (output > 0.5).astype(np.uint8) * 255  
+    binary_mask = (output > 0.5).astype(np.uint8) * 255
 
     return cv2.resize(binary_mask, (cv_image.shape[1], cv_image.shape[0]), interpolation=cv2.INTER_NEAREST)
