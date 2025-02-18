@@ -21,11 +21,11 @@ class ServiceTester:
 
         # Create subscribers for the RGB image, depth image, and camera_info.
         self._rgb_sub = rospy.Subscriber(
-            "/front_rgbd_camera/rgb/image_raw", Image, self.rgb_image_callback)
+            "/body_camera/body_camera/rgb/image_raw", Image, self.rgb_image_callback)
         self._depth_sub = rospy.Subscriber(
-            "/front_rgbd_camera/stereo/image", Image, self.depth_image_callback)
+            "/body_camera/body_camera/stereo/image_raw", Image, self.depth_image_callback)
         self._camera_info_sub = rospy.Subscriber(
-            "/front_rgbd_camera/stereo/camera_info", CameraInfo, self.camera_info_callback)
+            "/body_camera/body_camera/rgb/camera_info", CameraInfo, self.camera_info_callback)
 
         # Create the service clients
         self._crack_service_client = rospy.ServiceProxy("find_cracks", FindCrack)
