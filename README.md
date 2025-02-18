@@ -11,6 +11,9 @@ git clone git@github.com:RobotnikAutomation/heron_msgs.git
 git clone git@github.com:RobotnikAutomation/robotnik_msgs.git
 ```
 
+## Download the models
+Please get the models from Slack and put them in the `heron_ws/src/heron_vision/models` folder.
+
 ## How to run the docker
 ```
 cd heron_vision/docker
