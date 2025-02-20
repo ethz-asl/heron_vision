@@ -26,7 +26,7 @@ class PotholeFinder:
 
         # Also publish the segmentation on a topic.
         self._segmentation_pub = rospy.Publisher(
-            "pothole_segmentation", Image, queue_size=1, latch=True)
+            "~/pothole_segmentation", Image, queue_size=1, latch=True)
 
     # Define a callback for the potholes server.
     def find_pothole_callback(self, req: FindPotholeRequest):
@@ -68,18 +68,18 @@ class PotholeFinder:
 
         # Compute depth values for the largest pothole
         pothole_depths = depth_image[largest_pothole_mask]
-        avg_depth = np.mean(pothole_depths) if pothole_depths.size > 0 else 0
+        avg_depth = np.mean(pothole_depths.reshape(-1)) if pothole_depths.size > 0 else 0
 
         # Get real-world coordinates of the largest pothole's center of mass
         center_x, center_y = centroids[largest_label]
         real_x = (center_x - camera_info.K[2]) * avg_depth / camera_info.K[0]
         real_y = (center_y - camera_info.K[5]) * avg_depth / camera_info.K[4]
-        real_z = avg_depth
+        real_z = avg_depth/1000.0
 
         # Compute surface area
         surface_area = self.find_surface_area(
             largest_pothole_mask, depth_image, camera_info)
-        rospy.loginfo(f"Pothole Surface Area: {surface_area:.4f} m^2")
+        rospy.loginfo(f"Average depth: {real_z:.4f} Pothole Surface Area: {surface_area:.4f} m^2")
 
         # Construct PoseStamped message for center of mass
         pose_msg = PoseStamped()
@@ -130,7 +130,7 @@ class PotholeFinder:
         if valid_depths.size == 0:
             return 0.0  # No valid depth data
 
-        avg_depth = np.mean(valid_depths)
+        avg_depth = np.mean(valid_depths)/1000.0
 
         # Calculate real-world pixel area using depth and focal length
         pixel_size_x = avg_depth / fx

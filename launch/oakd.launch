@@ -26,7 +26,7 @@
 
   <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" output="screen" />
 
-  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" output="screen" required="true"
+  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" output="screen" required="true" clear_params="true"
     args="load depthai_ros_driver/Camera nodelet_manager">
     <param name="camera_i_ip" value="$(arg ip_address)" />
     <param name="camera_i_nn_type" value="none" />
@@ -40,13 +40,16 @@
     <!-- New parameters for stereo -->
     <!-- https://github.com/luxonis/depthai-ros/blob/noetic/depthai_ros_driver/src/param_handlers/stereo_param_handler.cpp -->
     <param name="stereo_i_depth_preset" value="ROBOTICS" />
-    <param name="stereo_i_depth_filter_size" value="5" />
+    <!-- <param name="stereo_i_left_rect_publish_topic" value="true" />
+    <param name="stereo_i_right_rect_publish_topic" value="true" /> -->
+
+    <!-- <param name="stereo_i_depth_filter_size" value="5" />
     <param name="stereo_i_stereo_conf_threshold" value="240" />
     <param name="stereo_i_disparity_width" value="DISPARITY_96" />
     <param name="stereo_i_enable_temporal_filter" value="true" />
     <param name="stereo_i_temporal_filter_persistency" value="VALID_2_IN_LAST_4" />
     <param name="stereo_i_enable_speckle_filter" value="true" />
-    <param name="stereo_i_enable_spatial_filter" value="false" />
+    <param name="stereo_i_enable_spatial_filter" value="false" /> -->
 
   </node>
 
