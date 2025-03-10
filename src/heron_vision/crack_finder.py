@@ -22,6 +22,10 @@ class CrackFinder:
         self._get_bool_service = rospy.Service(
             "get_bool", GetBool, self.get_bool_callback)
 
+        # Also publish the segmentation on a topic.
+        self._segmentation_pub = rospy.Publisher(
+            "~/crack_segmentation", Image, queue_size=1, latch=True)
+
     # Define a callback for the cracks server.
 
     def find_crack_callback(self, req: FindCrackRequest):
@@ -31,16 +35,16 @@ class CrackFinder:
         cv_image = self._cv_bridge.imgmsg_to_cv2(
             req.image_rgb, desired_encoding='passthrough')
         print(cv_image.shape)
-        
+
         # Save depth image
         depth_image = self._cv_bridge.imgmsg_to_cv2(
             req.image_depth, desired_encoding="passthrough")
 
         # Save camera info
-        camera_info = req.camera_info     
+        camera_info = req.camera_info
 
         seg_crack_mask = segment_defect(cv_image, "crack") # uint8 (0 backgoround, 255 mask)
-        
+
         # Find connected components (separate cracks)
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(seg_crack_mask, connectivity=8)
 
@@ -56,12 +60,12 @@ class CrackFinder:
 
         # Find the 3D points of the crack
         crack_3d_points = self.extract_crack_3d_points(largest_crack_mask, depth_image, camera_info)
-        
+
         if not crack_3d_points:
             rospy.logwarn("No valid depth data for crack.")
             response = FindCrackResponse()
             response.success = False
-            return response 
+            return response
 
         # Get the closest and farthest 3D points
         start_3d, end_3d = self.find_farthest_crack_points(crack_3d_points)
@@ -73,17 +77,19 @@ class CrackFinder:
 
         end_point_msg = PointStamped()
         end_point_msg.header.frame_id = req.camera_info.header.frame_id
-        end_point_msg.point.x, end_point_msg.point.y, end_point_msg.point.z = end_3d 
+        end_point_msg.point.x, end_point_msg.point.y, end_point_msg.point.z = end_3d
 
         # Convert segmentation mask to ROS Image
-        segmentation_mask_msg = self._cv_bridge.cv2_to_imgmsg(seg_crack_mask, encoding="mono8")     
+        segmentation_mask_msg = self._cv_bridge.cv2_to_imgmsg(seg_crack_mask, encoding="mono8")
+        segmentation_mask_msg.header = req.image_rgb.header
+        self._segmentation_pub.publish(segmentation_mask_msg)
 
         # Prepare response
         response = FindCrackResponse()
         response.start_point = start_point_msg
         response.end_point = end_point_msg
         response.segmentation_mask = segmentation_mask_msg
-        response.success = True 
+        response.success = True
 
         return response
 
@@ -91,13 +97,13 @@ class CrackFinder:
         """Extracts 3D coordinates of the crack pixels using camera intrinsics."""
         K = np.array(camera_info.K).reshape(3, 3)
         fx, fy = K[0, 0], K[1, 1]    # Focal lengths (determines how pixels map to real-world distances)
-        cx, cy = K[0, 2], K[1, 2]    # Principal point (optical center) 
+        cx, cy = K[0, 2], K[1, 2]    # Principal point (optical center)
 
         crack_pixels = np.argwhere(mask > 0)  # Get (v, u) indices
 
         crack_3d_points = []
         for (v, u) in crack_pixels:
-            z = depth_image[v, u]  # Depth at pixel (u, v)
+            z = depth_image[v, u]/1000.0  # Depth at pixel (u, v)
             if z > 0:  # Avoid invalid depth
                 x = (u - cx) * z / fx
                 y = (v - cy) * z / fy

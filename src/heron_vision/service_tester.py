@@ -21,11 +21,11 @@ class ServiceTester:
 
         # Create subscribers for the RGB image, depth image, and camera_info.
         self._rgb_sub = rospy.Subscriber(
-            "/front_rgbd_camera/rgb/image_raw", Image, self.rgb_image_callback)
+            "/robot/arm_camera/rgb/image_raw", Image, self.rgb_image_callback)
         self._depth_sub = rospy.Subscriber(
-            "/front_rgbd_camera/stereo/image", Image, self.depth_image_callback)
+            "/robot/arm_camera/stereo/image_raw", Image, self.depth_image_callback)
         self._camera_info_sub = rospy.Subscriber(
-            "/front_rgbd_camera/stereo/camera_info", CameraInfo, self.camera_info_callback)
+            "/robot/arm_camera/rgb/camera_info", CameraInfo, self.camera_info_callback)
 
         # Create the service clients
         self._crack_service_client = rospy.ServiceProxy("find_cracks", FindCrack)
@@ -55,9 +55,19 @@ class ServiceTester:
         if self._rgb_image_msg and self._depth_image_msg and self._camera_info_msg:
             rospy.loginfo("All data available. Calling service calls.")
             # Send each service request
-            self._send_crack_service_request()
-            self._send_pothole_service_request()
-            self._send_lane_edge_service_request()
+            try:
+                self._send_crack_service_request()
+            except:
+                rospy.logwarn("No crack service found")
+            try:
+                self._send_pothole_service_request()
+            except:
+                rospy.logwarn("No pothole service found")
+            try:
+                self._send_lane_edge_service_request()
+            except:
+                rospy.logwarn("No lane service found")
+
 
     def _send_crack_service_request(self):
         rospy.loginfo("Calling crack service.")

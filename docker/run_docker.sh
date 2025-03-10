@@ -72,6 +72,8 @@ fi
 XAUTH=/tmp/.docker.xauth
 rm $XAUTH
 
+xhost +si:localuser:root
+
 echo "Preparing Xauthority data..."
 xauth_list=$(xauth nlist :0 | tail -n 1 | sed -e 's/^..../ffff/')
 if [ ! -f $XAUTH ]; then

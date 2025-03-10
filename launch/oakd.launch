@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="prefix" default="robot_front_rgbd_camera_" />
+  <arg name="ip_address" default="192.168.0.185" />
+  <arg name="node_name" default="oakd" />
+  <arg name="device_id" default="" />
+
+  <arg name="name" default="$(arg node_name)" />
+
+  <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
+    args="load depth_image_proc/convert_metric nodelet_manager">
+    <remap from="image_raw" to="$(arg name)/stereo/image_raw" />
+    <remap from="image" to="$(arg name)/stereo/image" />
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="depth_image_to_rgb_pointcloud"
+    args="load depth_image_proc/point_cloud_xyzrgb nodelet_manager">
+    <param name="queue_size" value="10" />
+
+    <remap from="rgb/camera_info" to="$(arg name)/rgb/camera_info" />
+    <remap from="rgb/image_rect_color" to="$(arg name)/rgb/image_raw" />
+    <remap from="depth_registered/image_rect" to="$(arg name)/stereo/image" />
+    <remap from="depth_registered/points" to="$(arg name)/points" />
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" output="screen" />
+
+  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" output="screen" required="true" clear_params="true"
+    args="load depthai_ros_driver/Camera nodelet_manager">
+    <param name="camera_i_ip" value="$(arg ip_address)" />
+    <param name="camera_i_nn_type" value="none" />
+    <param name="stereo_i_subpixel" value="true" />
+    <param name="imu_i_frame_prefix" value="$(arg prefix)" />
+    <param name="left_i_frame_prefix" value="$(arg prefix)" />
+    <param name="right_i_frame_prefix" value="$(arg prefix)" />
+    <param name="rgb_i_frame_prefix" value="$(arg prefix)" />
+    <param name="stereo_i_frame_prefix" value="$(arg prefix)" />
+
+    <!-- New parameters for stereo -->
+    <!-- https://github.com/luxonis/depthai-ros/blob/noetic/depthai_ros_driver/src/param_handlers/stereo_param_handler.cpp -->
+    <param name="stereo_i_depth_preset" value="ROBOTICS" />
+    <!-- <param name="stereo_i_left_rect_publish_topic" value="true" />
+    <param name="stereo_i_right_rect_publish_topic" value="true" /> -->
+
+    <!-- <param name="stereo_i_depth_filter_size" value="5" />
+    <param name="stereo_i_stereo_conf_threshold" value="240" />
+    <param name="stereo_i_disparity_width" value="DISPARITY_96" />
+    <param name="stereo_i_enable_temporal_filter" value="true" />
+    <param name="stereo_i_temporal_filter_persistency" value="VALID_2_IN_LAST_4" />
+    <param name="stereo_i_enable_speckle_filter" value="true" />
+    <param name="stereo_i_enable_spatial_filter" value="false" /> -->
+
+  </node>
+
+</launch>

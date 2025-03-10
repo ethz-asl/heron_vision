@@ -1,0 +1,13 @@
+<launch>
+  <arg name="dataset" default="/root/data/heron/2025-02-20-13-17-03.bag" />
+  <!-- <arg name="dataset" default="/root/data/heron/2025-02-18-15-25-24.bag" /> -->
+
+  <node name="pothole_finder" pkg="heron_vision" type="pothole_finder_node.py" output="screen" required="true">
+  </node>
+
+  <node name="service_tester" pkg="heron_vision" type="service_tester_node.py" output="screen" required="true">
+  </node>
+
+  <!-- <node pkg="rosbag" type="play" name="rosbag" args="$(arg dataset) -r 0.5"/> -->
+
+</launch>
