@@ -14,6 +14,8 @@ git clone git@github.com:RobotnikAutomation/robotnik_msgs.git
 ## Download the models
 Please get the models from Slack and put them in the `heron_ws/src/heron_vision/models` folder.
 
+If you are missing one of the three models (potholes, cracks, and lanes), just copy one of the others over and create the missing one.
+
 ## How to run the docker
 ```
 cd heron_vision/docker
@@ -24,7 +26,7 @@ Subsequent times you can just run:
 ./run_docker.sh
 ```
 
-For rebinding the paths, `-w ~/path/to/the/heron_ws/folder` and `-d /path/to/the/data/folder` as input to `./run_docker.sh`.
+For rebinding the paths, `-w /path/to/the/heron_ws/folder` and `-d /path/to/the/data/folder` as input to `./run_docker.sh`. **Please use the full path, so `/home/$USER/folder` rather than `~/folder`**.
 
 To run a second bash shell into the docker, use:
 ```
@@ -42,6 +44,11 @@ cd ~/heron_ws
 catkin build
 ```
 
+After building the code for the first time, you'll have to re-source the workspace:
+```
+source ~/.bashrc
+```
+
 # Running the code
 ## Starting ROS
 There should always be a roscore running. Easiest is to start it in the background:
@@ -56,6 +63,11 @@ cd ~/data/path/to/the/dataset/
 rosbag play 2025-02-18-15-25-24.bag
 ```
 
+It's very likely that the inference is slower than the dataset playback, so it's nice to slow down the replay with `-r 0.5` (makes the bag run at half speed). Similarly, it's nice to loop the bag over and over again with the `-l` flag.
+```
+rosbag play 2025-02-18-15-25-24.bag -r 0.5 -l
+```
+
 ## Running the pothole finding node
 This node will just sit there and wait for someone to call a service request
 ```
@@ -67,3 +79,12 @@ This will subscribe to the topics in the ROS Bag and collect them to call the cr
 ```
 rosrun heron_vision service_tester_node.py
 ```
+
+## Verifying the output
+You can check the segmentations by opening up another docker instance and running `rqt_image_view`:
+
+```
+docker exec -it heron bash
+rqt_image_view
+```
+Press the refresh button on the top right and select the `/pothole_segmentation` topic.
