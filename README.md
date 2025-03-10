@@ -63,7 +63,7 @@ rosrun heron_vision pothole_finder_node.py
 ```
 
 ## Running the testing node
-This will subscribe to the topics in the ROS Bag and collect them to call the crack service.
+This will subscribe to the topics in the ROS Bag and collect them to call the crack, pothole, and lane service.
 ```
 rosrun heron_vision service_tester_node.py
 ```

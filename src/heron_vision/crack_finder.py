@@ -5,6 +5,7 @@ from cv_bridge import CvBridge
 from heron_msgs.srv import *
 from robotnik_msgs.srv import *
 from geometry_msgs.msg import PointStamped
+from sensor_msgs.msg import Image
 from .inference import segment_defect
 
 

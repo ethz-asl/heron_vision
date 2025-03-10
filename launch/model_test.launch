@@ -8,6 +8,6 @@
   <node name="service_tester" pkg="heron_vision" type="service_tester_node.py" output="screen" required="true">
   </node>
 
-  <!-- <node pkg="rosbag" type="play" name="rosbag" args="$(arg dataset) -r 0.5"/> -->
+  <node pkg="rosbag" type="play" name="rosbag" args="$(arg dataset) -r 0.5"/>
 
 </launch>
