@@ -42,6 +42,11 @@ cd ~/heron_ws
 catkin build
 ```
 
+After building the code for the first time, you'll have to re-source the workspace:
+```
+source ~/.bashrc
+```
+
 # Running the code
 ## Starting ROS
 There should always be a roscore running. Easiest is to start it in the background:
