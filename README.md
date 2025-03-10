@@ -24,7 +24,7 @@ Subsequent times you can just run:
 ./run_docker.sh
 ```
 
-For rebinding the paths, `-w ~/path/to/the/heron_ws/folder` and `-d /path/to/the/data/folder` as input to `./run_docker.sh`.
+For rebinding the paths, `-w /path/to/the/heron_ws/folder` and `-d /path/to/the/data/folder` as input to `./run_docker.sh`. **Please use the full path, so `/home/$USER/folder` rather than `~/folder`**.
 
 To run a second bash shell into the docker, use:
 ```
