@@ -46,6 +46,12 @@ class CrackFinder:
 
         seg_crack_mask = segment_defect(cv_image, "crack") # uint8 (0 backgoround, 255 mask)
 
+        # Set up everything for morphological operations
+        kernel = np.ones((5,5),np.uint8)
+
+        # Apply closing
+        seg_crack_mask = cv2.morphologyEx(seg_crack_mask, cv.MORPH_CLOSE, kernel)
+
         # Find connected components (separate cracks)
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(seg_crack_mask, connectivity=8)
 
