@@ -74,3 +74,12 @@ This will subscribe to the topics in the ROS Bag and collect them to call the cr
 ```
 rosrun heron_vision service_tester_node.py
 ```
+
+## Verifying the output
+You can check the segmentations by opening up another docker instance and running `rqt_image_view`:
+
+```
+docker exec -it heron bash
+rqt_image_view
+```
+Press the refresh button on the top right and select the `/pothole_segmentation` topic.
