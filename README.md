@@ -14,6 +14,8 @@ git clone git@github.com:RobotnikAutomation/robotnik_msgs.git
 ## Download the models
 Please get the models from Slack and put them in the `heron_ws/src/heron_vision/models` folder.
 
+If you are missing one of the three models (potholes, cracks, and lanes), just copy one of the others over and create the missing one.
+
 ## How to run the docker
 ```
 cd heron_vision/docker
