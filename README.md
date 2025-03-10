@@ -63,6 +63,11 @@ cd ~/data/path/to/the/dataset/
 rosbag play 2025-02-18-15-25-24.bag
 ```
 
+It's very likely that the inference is slower than the dataset playback, so it's nice to slow down the replay with `-r 0.5` (makes the bag run at half speed). Similarly, it's nice to loop the bag over and over again with the `-l` flag.
+```
+rosbag play 2025-02-18-15-25-24.bag -r 0.5 -l
+```
+
 ## Running the pothole finding node
 This node will just sit there and wait for someone to call a service request
 ```
