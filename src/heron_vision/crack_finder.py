@@ -27,6 +27,16 @@ class CrackFinder:
         self._segmentation_pub = rospy.Publisher(
             "~/crack_segmentation", Image, queue_size=1, latch=True)
 
+        self._start_pub = rospy.Publisher(
+            "~/crack_start", PointStamped, queue_size=1
+        )
+        self._end_pub = rospy.Publisher(
+            "~/crack_end", PointStamped, queue_size=1
+        )
+        self._overlay_pub = rospy.Publisher(
+            "~/crack_overlay", Image, queue_size=1, latch=True
+        )
+
     # Define a callback for the cracks server.
 
     def find_crack_callback(self, req: FindCrackRequest):
@@ -48,10 +58,12 @@ class CrackFinder:
 
         # Set up everything for morphological operations
         kernel = np.ones((5,5),np.uint8)
+        #  kernel = np.ones((10,10),np.uint8)
 
         # Apply closing
         seg_crack_mask = cv2.morphologyEx(seg_crack_mask, cv2.MORPH_CLOSE, kernel)
 
+        #TODO try full seg mask to use start & end points instead of largest connected
         # Find connected components (separate cracks)
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(seg_crack_mask, connectivity=8)
 
@@ -81,15 +93,31 @@ class CrackFinder:
         start_point_msg = PointStamped()
         start_point_msg.header.frame_id = req.camera_info.header.frame_id
         start_point_msg.point.x, start_point_msg.point.y, start_point_msg.point.z = start_3d
+        self._start_pub.publish(start_point_msg)
 
         end_point_msg = PointStamped()
         end_point_msg.header.frame_id = req.camera_info.header.frame_id
         end_point_msg.point.x, end_point_msg.point.y, end_point_msg.point.z = end_3d
+        self._end_pub.publish(end_point_msg)
 
         # Convert segmentation mask to ROS Image
         segmentation_mask_msg = self._cv_bridge.cv2_to_imgmsg(seg_crack_mask, encoding="mono8")
         segmentation_mask_msg.header = req.image_rgb.header
         self._segmentation_pub.publish(segmentation_mask_msg)
+
+        # create overlay with start & end points
+        overlay_mask = cv2.cvtColor(seg_crack_mask, cv2.COLOR_GRAY2BGR)
+        start_px = self.project_to_image(start_3d, camera_info)
+        end_px = self.project_to_image(end_3d, camera_info)
+
+        # draw circle
+        cv2.circle(overlay_mask, start_px, 5, (0, 255, 0), -1) # green
+        cv2.circle(overlay_mask, end_px, 5, (0, 0, 255), -1) # red
+
+        # publish overlay
+        overlay_msg = self._cv_bridge.cv2_to_imgmsg(overlay_mask, encoding="bgr8")
+        overlay_msg.header = req.image_rgb.header
+        self._overlay_pub.publish(overlay_msg)
 
         # Prepare response
         response = FindCrackResponse()
@@ -122,6 +150,18 @@ class CrackFinder:
         """Finds the closest and farthest points along the Z-axis."""
         crack_3d_points.sort(key=lambda p: p[2])  # Sort by Z-depth (distance)
         return crack_3d_points[0], crack_3d_points[-1]
+
+    def project_to_image(self, point_3d, camera_info):
+        """project 3d point to 2d plane"""
+        K = np.array(camera_info.K).reshape(3,3)
+        fx, fy = K[0,0], K[1,1]
+        cx, cy = K[0,2], K[1,2]
+
+        x, y, z = point_3d
+        u = int((x * fx / z) + cx)
+        v = int((y * fy / z) + cy)
+
+        return (u,v)
 
     def get_bool_callback(self, req: GetBoolRequest):
         print("Getting a bool")
