@@ -19,6 +19,9 @@ RUN pip install torchvision segmentation_models_pytorch scipy
 
 RUN apt-get -qq update && apt-get install -y ros-noetic-depthai-ros
 
+# install htop to kill nodes
+RUN apt-get --qq update && apt-get install -y htop
+
 # Set up bash
 # Add sourcing of the repo to the ~/.bashrc
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
