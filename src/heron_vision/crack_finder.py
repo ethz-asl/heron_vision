@@ -8,6 +8,7 @@ from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import Image
 from .inference import segment_defect
 
+MIN_CRACK_SIZE = 500 # get this instead from rosparam later
 
 class CrackFinder:
     def __init__(self, name):
@@ -73,6 +74,18 @@ class CrackFinder:
             response.success = False
             return response
 
+        # Get indices of valid cracks
+        valid_crack_idxs = [idx for idx in range(1, num_labels) if stats[idx, cv2.CC_STAT_AREA] > MIN_CRACK_SIZE]
+
+        if not valid_crack_idxs:
+            rospy.logwarn("No cracks large enough to process.")
+            response = FindCrackResponse()
+            response.success = False
+            return response
+
+        # Create a mask including all valid segments
+        valid_crack_mask = np.isin(labels, valid_crack_idxs)
+
         # Find the largest crack (excluding background)
         largest_crack_idx = np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1
         largest_crack_mask = (labels == largest_crack_idx)
@@ -87,7 +100,9 @@ class CrackFinder:
             return response
 
         # Get the closest and farthest 3D points
-        start_3d, end_3d = self.find_farthest_crack_points(crack_3d_points)
+        # start_3d, end_3d = self.find_farthest_crack_points(crack_3d_points)
+        start_3d, end_3d = self.find_farthest_crack_points(valid_crack_mask, depth_image, camera_info)
+        # start_3d, end_3d = self.find_left_right_crack_points(crack_3d_points, camera_info)
 
         # Create PointStamped messages
         start_point_msg = PointStamped()
@@ -146,10 +161,47 @@ class CrackFinder:
 
         return crack_3d_points
 
-    def find_farthest_crack_points(self, crack_3d_points):
-        """Finds the closest and farthest points along the Z-axis."""
-        crack_3d_points.sort(key=lambda p: p[2])  # Sort by Z-depth (distance)
-        return crack_3d_points[0], crack_3d_points[-1]
+    # def find_farthest_crack_points(self, crack_3d_points):
+    #     """Finds the closest and farthest points along the Z-axis."""
+    #     crack_3d_points.sort(key=lambda p: p[2])  # Sort by Z-depth (distance)
+    #     return crack_3d_points[0], crack_3d_points[-1]
+
+    def find_farthest_crack_points(self, valid_crack_mask, depth_mask, camera_info):
+       
+        # Extract 3D points from all valid crack pixels
+        crack_3d_points = self.extract_crack_3d_points(valid_crack_mask, depth_mask, camera_info)
+
+        if not crack_3d_points:
+            rospy.logwarn("No valid depth data for cracks.")
+            return None, None
+
+        # Project all 3D points to 2D image coordinates
+        projected_points = [self.project_to_image(p, camera_info) for p in crack_3d_points]
+
+        # Find leftmost and rightmost based on 2D x-coordinates
+        left_2d = min(projected_points, key=lambda p: p[0])
+        right_2d = max(projected_points, key=lambda p: p[0])
+
+        # Retrieve the corresponding 3D points
+        left_3d = crack_3d_points[projected_points.index(left_2d)]
+        right_3d = crack_3d_points[projected_points.index(right_2d)]
+
+        return left_3d, right_3d
+ 
+
+    def find_left_right_crack_points(self, crack_3d_points, camera_info):
+        projected_points = [self.project_to_image(p, camera_info) for p in crack_3d_points]
+
+        # sort by x-coord (left -> right)
+        projected_points.sort(key=lambda p: p[0])
+
+        left_2d = projected_points[0]
+        right_2d = projected_points[-1]
+
+        left_3d = crack_3d_points[projected_points.index(left_2d)]
+        right_3d = crack_3d_points[projected_points.index(right_2d)]
+
+        return left_3d, right_3d
 
     def project_to_image(self, point_3d, camera_info):
         """project 3d point to 2d plane"""

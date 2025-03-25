@@ -1,5 +1,6 @@
 import rospy
 import cv2
+import tf
 from cv_bridge import CvBridge
 from heron_msgs.srv import *
 from robotnik_msgs.srv import *
@@ -68,26 +69,51 @@ class PotholeFinder:
 
         # Compute depth values for the largest pothole
         pothole_depths = depth_image[largest_pothole_mask]
-        avg_depth = np.mean(pothole_depths.reshape(-1)) if pothole_depths.size > 0 else 0
+        avg_depth = (np.mean(pothole_depths.reshape(-1)) if pothole_depths.size > 0 else 0)/1000
 
         # Get real-world coordinates of the largest pothole's center of mass
         center_x, center_y = centroids[largest_label]
         real_x = (center_x - camera_info.K[2]) * avg_depth / camera_info.K[0]
         real_y = (center_y - camera_info.K[5]) * avg_depth / camera_info.K[4]
-        real_z = avg_depth/1000.0
+        real_z = avg_depth
+
 
         # Compute surface area
         surface_area = self.find_surface_area(
             largest_pothole_mask, depth_image, camera_info)
         rospy.loginfo(f"Average depth: {real_z:.4f} Pothole Surface Area: {surface_area:.4f} m^2")
 
+        # Compute orientation: camera facing the pothole
+        dir_vector = np.array([real_x, real_y, real_z])
+        dir_vector /= np.linalg.norm(dir_vector) # normalise
+
+        # Create rotation matrix aligning camera's z-axis with dir_vector
+        z_axis = dir_vector
+        x_axis = np.cross([0, -1, 0], z_axis)
+        x_axis /= np.linalg.norm(x_axis)
+        y_axis = np.cross(z_axis, x_axis)
+
+        rot_matrix = np.eye(4)
+        rot_matrix[:3, 0] = x_axis
+        rot_matrix[:3, 1] = y_axis
+        rot_matrix[:3, 2] = z_axis
+
+        quat = tf.transformations.quaternion_from_matrix(rot_matrix)
+
         # Construct PoseStamped message for center of mass
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = "front_rgbd_camera_rgb_camera_optical_frame"
+
         pose_msg.pose.position.x = real_x
         pose_msg.pose.position.y = real_y
         pose_msg.pose.position.z = real_z
+
+        pose_msg.pose.orientation.x = quat[0]
+        pose_msg.pose.orientation.y = quat[1]
+        pose_msg.pose.orientation.z = quat[2]
+        pose_msg.pose.orientation.w = quat[3]
+
 
         # Prepare response
         response = FindPotholeResponse()
@@ -95,6 +121,7 @@ class PotholeFinder:
         response.surface_area_m = surface_area
         response.success = True
 
+        rospy.logwarn(f"res {response}")
         return response
 
     def find_surface_area(self, mask, depth_image, camera_info):
