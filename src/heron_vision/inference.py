@@ -33,7 +33,7 @@ MODELS = {
 # Preprocessing (for potholes/lane_edges)
 def preprocess_image(cv_image):
     preprocess = transforms.Compose([
-        transforms.Resize((256, 256)),
+        transforms.Resize((512, 512)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
